@@ -3,8 +3,11 @@ import requests
 from flask import Flask, request, jsonify
 from datetime import datetime
 import pytz
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
+
 
 TASKS = []   # simple in-memory task list
 MEMORY = {}  # simple in-memory memory dictionary
