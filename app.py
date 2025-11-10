@@ -138,16 +138,16 @@ def webhook():
 
 
     # MEMORY — SAVE PREFERENCE
+        # MEMORY — SAVE PREFERENCE
     if intent == "Save_Memory":
         key = params.get("key", "").lower()
-        value = params.get("value", "")
+        value = params.get("value", "").lower()
 
-        if key and value:
-            MEMORY[key] = value
-            return jsonify({"fulfillmentText": f"Okay! I will remember your {key} is {value}."})
-        else:
+        if not key or not value:
             return jsonify({"fulfillmentText": "I didn't understand what to remember."})
 
+        MEMORY[key] = value
+        return jsonify({"fulfillmentText": f"Got it! I will remember that your {key} is {value}."})
 
     # MEMORY — RECALL PREFERENCE
     if intent == "Recall_Memory":
@@ -156,8 +156,7 @@ def webhook():
         if key in MEMORY:
             return jsonify({"fulfillmentText": f"Your {key} is {MEMORY[key]}."})
         else:
-            return jsonify({"fulfillmentText": f"I don’t have anything stored for {key} yet."})
-
+            return jsonify({"fulfillmentText": f"I don't have anything stored for {key} yet."})
 
 
     # FALLBACK
