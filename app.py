@@ -7,6 +7,7 @@ import pytz
 app = Flask(__name__)
 
 TASKS = []   # simple in-memory task list
+MEMORY = {}  # simple in-memory memory dictionary
 
 # Load News API Key
 NEWSDATA_API_KEY = os.getenv("NEWSDATA_API_KEY")
@@ -25,6 +26,7 @@ def webhook():
     params = data.get("queryResult", {}).get("parameters", {})
     user_message = data.get("queryResult", {}).get("queryText", "").lower()
 
+
     # WEATHER INTENT
     if intent == "Weather":
         try:
@@ -42,7 +44,7 @@ def webhook():
             return jsonify({"fulfillmentText": f"Weather API error: {str(e)}"})
 
 
-    # TIME CHECK INTENT
+    #  TIME CHECK INTENT
     if intent == "Time_Check":
         try:
             ist = pytz.timezone("Asia/Kolkata")
@@ -53,10 +55,10 @@ def webhook():
             return jsonify({"fulfillmentText": f"Time error: {str(e)}"})
 
 
-    #  NEWS INTENT
+    # NEWS INTENT
     if intent == "News_Update":
 
-        # Optional category detection from user message
+        # Optional category detection
         category = None
         if "tech" in user_message:
             category = "technology"
@@ -66,7 +68,7 @@ def webhook():
             category = "world"
         elif "india" in user_message:
             category = "india"
-        elif "finance" in user_message:
+        elif "finance" in user_message or "business" in user_message:
             category = "business"
 
         try:
@@ -112,7 +114,7 @@ def webhook():
         return jsonify({"fulfillmentText": f"Task added: {task_text} (Due: {date_time})"})
 
 
-    # TASK LIST
+    #  TASK LIST
     if intent == "task_list":
         if not TASKS:
             return jsonify({"fulfillmentText": "You have no tasks."})
@@ -135,11 +137,35 @@ def webhook():
         return jsonify({"fulfillmentText": f"Task deleted: {removed['task']}"})
 
 
+    # MEMORY — SAVE PREFERENCE
+    if intent == "Save_Memory":
+        key = params.get("key", "").lower()
+        value = params.get("value", "")
+
+        if key and value:
+            MEMORY[key] = value
+            return jsonify({"fulfillmentText": f"Okay! I will remember your {key} is {value}."})
+        else:
+            return jsonify({"fulfillmentText": "I didn't understand what to remember."})
+
+
+    # MEMORY — RECALL PREFERENCE
+    if intent == "Recall_Memory":
+        key = params.get("key", "").lower()
+
+        if key in MEMORY:
+            return jsonify({"fulfillmentText": f"Your {key} is {MEMORY[key]}."})
+        else:
+            return jsonify({"fulfillmentText": f"I don’t have anything stored for {key} yet."})
+
+
+
     # FALLBACK
     return jsonify({"fulfillmentText": "I'm here to help!"})
 
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
 
