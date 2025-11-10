@@ -48,6 +48,16 @@ def webhook():
         except Exception as e:
             return jsonify({"fulfillmentText": f"Time error: {str(e)}"})
 
+    if intent == "task_complete":
+        number = int(params.get("number", 0))
+
+        if number < 1 or number > len(TASKS):
+            return jsonify({"fulfillmentText": "Invalid task number."})
+
+        TASKS[number - 1]["completed"] = True
+        task_text = TASKS[number - 1]["task"]
+        return jsonify({"fulfillmentText": f"Task marked as completed: {task_text}"})
+
    
     if intent == "task_creation":
         task_text = params.get("task", "")
